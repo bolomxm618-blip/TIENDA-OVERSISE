@@ -482,6 +482,9 @@
             text-transform: uppercase;
             border-radius: 8px;
             cursor: pointer;
+            pointer-events: auto;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
             letter-spacing: 2px;
             font-size: 1rem;
             margin-bottom: 20px;
@@ -1044,7 +1047,7 @@
 
                     <a class="size-chart-link" onclick="alert('Guía de tallas: Corte oversize / holgado.')">GUÍA DE TALLAS</a>
 
-                    <button class="add-cart-action-btn" onclick="confirmAddToCart()">AÑADIR AL CARRITO</button>
+                    <button type="button" id="addCartBtn" class="add-cart-action-btn">AÑADIR AL CARRITO</button>
 
                     <div class="nav-product-arrows">
                         <button class="arrow-btn" onclick="navigateProduct(-1)">&lt; Anterior</button>
@@ -1284,17 +1287,41 @@
             input.value = quantity;
         }
 
-        function confirmAddToCart() {
+        function confirmAddToCart(e) {
+            if (e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+
             const p = products[currentProductIndex];
+
+            if (!p) {
+                console.error("No se encontró el producto.");
+                return;
+            }
+
+            // Asegurar que la cantidad sea válida antes de añadir.
+            let finalQty = parseInt(document.getElementById('qtyInput').value, 10);
+            if (!Number.isFinite(finalQty) || finalQty < 1) {
+                finalQty = 1;
+            }
+
+            quantity = finalQty;
+
             cart.push({
                 name: p.name,
                 price: p.price,
                 size: selectedSize,
                 qty: quantity
             });
+
             updateCartUI();
             openCartModal();
         }
+
+        // Evento directo para que AÑADIR AL CARRITO funcione correctamente
+        // también en Safari/iPhone/iPad.
+        document.getElementById('addCartBtn').addEventListener('click', confirmAddToCart);
 
         function openCartModal() {
             updateCartUI();
